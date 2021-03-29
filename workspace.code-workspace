@@ -1,0 +1,22 @@
+{
+  "folders": [
+    {
+      "name": "root",
+      "path": "."
+    },
+    {
+      "name": "esp32",
+      "path": "esp32"
+    },
+    {
+      "name": "esp8266",
+      "path": "esp8266"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.vscode": true,
+      "**/.pio": true
+    }
+  }
+}
