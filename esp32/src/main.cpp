@@ -6,13 +6,13 @@
 #include <Tone32.h>
 
 // Pin du capteur de présence
-const int PIN_MOUVEMENT_SENSOR = 2;
+const int PIN_MOVEMENT_SENSOR = 2;
 const int PIN_SOUND_SENSOR = 15;
 const int PIN_BUZZER = 12;
 
 bool isActive = false;
 bool sound = false;
-bool mouvement = false;
+bool movement = false;
 
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
@@ -25,12 +25,12 @@ const int mqttPort = 8883;
 #define DEBOUNCE_TIME 500
 volatile uint32_t DebounceTimer = 0;
 
-void IRAM_ATTR mouvementDetected()
+void IRAM_ATTR movementDetected()
 {
   if ( millis() - DEBOUNCE_TIME >= DebounceTimer ) {
     DebounceTimer = millis();
-    Serial.println("Mouvement détectè");
-    mouvement = true;
+    Serial.println("Movement détectè");
+    movement = true;
   } 
 }
 
@@ -58,7 +58,7 @@ void callback(char* topic, byte* message, unsigned int length) {
       Serial.print(F("deserializeJson() failed: "));
       return;
     }
-    int willBeActive = doc["isActive"];
+    int willBeActive = doc["isAlarmActive"];
     if (willBeActive == 1){
       isActive = true;
       Serial.println("Alarme active");
@@ -129,10 +129,10 @@ void setupMQTT()
 
 void setupPins()
 {
-  pinMode(PIN_MOUVEMENT_SENSOR, INPUT);
+  pinMode(PIN_MOVEMENT_SENSOR, INPUT);
   pinMode(PIN_SOUND_SENSOR, INPUT);
   pinMode(PIN_BUZZER, OUTPUT);
-  attachInterrupt(PIN_MOUVEMENT_SENSOR, mouvementDetected, CHANGE);
+  attachInterrupt(PIN_MOVEMENT_SENSOR, movementDetected, CHANGE);
   attachInterrupt(PIN_SOUND_SENSOR, soundDetected, CHANGE);
 }
 
@@ -150,7 +150,7 @@ void loop()
     reconnect();
   }
   client.loop();
-  if ((mouvement || sound) && isActive) {
+  if ((movement || sound) && isActive) {
     Serial.println("Envoi");
     StaticJsonDocument<300> JSONbuffer;
     JsonObject JSONencoder = JSONbuffer.createNestedObject();
@@ -163,9 +163,9 @@ void loop()
       }
       JSONencoder["type"] = "Sound";
     } else {
-      JSONencoder["type"] = "Mouvement";
-      int mouvementState = digitalRead(PIN_MOUVEMENT_SENSOR);
-      if (mouvementState == 1) {
+      JSONencoder["type"] = "Movement";
+      int movementState = digitalRead(PIN_MOVEMENT_SENSOR);
+      if (movementState == 1) {
         JSONencoder["value"] = "1";
       } else {
         JSONencoder["value"] = "0";
@@ -175,7 +175,7 @@ void loop()
     serializeJson(JSONencoder, JSONmessageBuffer);
     client.publish("alarms/test/events", JSONmessageBuffer);
     Serial.println(JSONmessageBuffer);
-    mouvement = false;
+    movement = false;
     sound = false;
     tone(PIN_BUZZER, 500, NULL, 0);
   }
