@@ -64,8 +64,9 @@ int getUsageFromEeprom();
 void setupMQTT();
 void setupWifi();
 void reconnect();
-void publish(String);
-void httpPost();
-void httpGet();
+void sendIsActivePayload(String);
+void pairAlarm();
+void waitForPairing();
+void pairing();
 
 #endif // MAIN__H
