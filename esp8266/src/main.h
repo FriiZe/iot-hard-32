@@ -30,11 +30,10 @@
 #define KEY_RETURN 5
 
 // MENU
-#define MENU_LENGTH 4
+#define MENU_LENGTH 3
 #define SET_ALARM_ON 0
 #define CHANGE_TIMER 1
 #define CHANGE_PASSWORD 2
-#define PAIR_ALARM 3
 #define RESET_MENU -1
 #define ENTER_CODE_MSG String("Enter code:")
 #define NEW_CODE_MSG String("New code:")

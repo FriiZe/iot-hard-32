@@ -11,7 +11,7 @@ const char *wifi_ssid = "SFR_4CA0";
 const char *wifi_password = "49dd0e4b41";
 const String hostname = "192.168.1.83";
 const String apiPort = "3000";
-const char *id = "254a89c7-ac15-43c9-b01b-ad465ab44d24";
+const char *id = "254a89c7-ac15-43c9-b01b-ad465ab44d21";
 
 // KEYPAD
 char key = NO_KEY;
@@ -35,7 +35,6 @@ String menu[MENU_LENGTH] = {
     {"Set alarm on"},
     {"Change timer"},
     {"Change code"},
-    {"Pair alarm"},
 };
 
 // VARIABLES
@@ -58,6 +57,8 @@ void setup()
   setupWifi();
   setupMQTT();
 
+  EEPROM.put(EEPROM_USAGE_ADDRESS, 564);
+  EEPROM.commit();
   checkSaved = getUsageFromEeprom();
 }
 
@@ -71,6 +72,11 @@ void loop()
   {
     while (true)
     {
+      if (!client.connected())
+      {
+        reconnect();
+      }
+      client.loop();
       key = keypad.getKey();
 
       if (!isMenuPrinted)
@@ -460,7 +466,7 @@ void setupMQTT()
   {
     Serial.println("Connecting to MQTT...");
 
-    if (client.connect(id))
+    if (client.connect((String(id) + "ESP-8266").c_str()))
     {
 
       Serial.println("connected");
@@ -497,7 +503,7 @@ void reconnect()
     {
       Serial.print("Attempting MQTT connection...");
 
-      if (client.connect(id))
+      if (client.connect((String(id) + "ESP-8266").c_str()))
       {
         Serial.println("connected");
       }
@@ -526,7 +532,7 @@ void sendIsActivePayload(String isActive)
   serializeJson(JSONencoder, JSONmessageBuffer);
   Serial.print("msg: ");
   Serial.println(JSONmessageBuffer);
-  if (client.publish("alarms/test/activation", JSONmessageBuffer) == true)
+  if (client.publish(("alarms/" + String(id) + "/activation").c_str(), JSONmessageBuffer) == true)
   {
     Serial.println("SUCCESS");
   }

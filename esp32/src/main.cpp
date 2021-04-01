@@ -21,65 +21,79 @@ const char *ssid = "SFR_4CA0";
 const char *password = "49dd0e4b41";
 const char *mqttServer = "mqtt.potb.dev";
 const int mqttPort = 8883;
+char *id = "254a89c7-ac15-43c9-b01b-ad465ab44d21";
 
 #define DEBOUNCE_TIME 500
 volatile uint32_t DebounceTimer = 0;
 
 void IRAM_ATTR movementDetected()
 {
-  if ( millis() - DEBOUNCE_TIME >= DebounceTimer ) {
+  if (millis() - DEBOUNCE_TIME >= DebounceTimer)
+  {
     DebounceTimer = millis();
     Serial.println("Movement détectè");
     movement = true;
-  } 
+  }
 }
 
 void IRAM_ATTR soundDetected()
 {
-  if ( millis() - DEBOUNCE_TIME >= DebounceTimer ) {
+  if (millis() - DEBOUNCE_TIME >= DebounceTimer)
+  {
     DebounceTimer = millis();
     Serial.println("Son détectè");
     sound = true;
-  } 
+  }
 }
 
-void callback(char* topic, byte* message, unsigned int length) {
-  String messageTemp; 
-  for (int i = 0; i < length; i++) {
+void callback(char *topic, byte *message, unsigned int length)
+{
+  String messageTemp;
+  for (int i = 0; i < length; i++)
+  {
     messageTemp += (char)message[i];
   }
 
-  if (String(topic) == "alarms/test/activation") {
+  if (String(topic) == "alarms/" + String(id) + "/activation")
+  {
     StaticJsonDocument<200> doc;
     DeserializationError error = deserializeJson(doc, messageTemp);
 
-  // Test if parsing succeeds.
-    if (error) {
+    // Test if parsing succeeds.
+    if (error)
+    {
       Serial.print(F("deserializeJson() failed: "));
       return;
     }
     int willBeActive = doc["isAlarmActive"];
-    if (willBeActive == 1){
+    if (willBeActive == 1)
+    {
       isActive = true;
       Serial.println("Alarme active");
     }
-    if (willBeActive == 0){
+    if (willBeActive == 0)
+    {
       isActive = false;
       Serial.println("Alarme desactive");
+      noTone(PIN_BUZZER, 0);
     }
-
   }
 }
 
-void reconnect() {
+void reconnect()
+{
   // Loop until we're reconnected
-  while (!client.connected()) {
+  while (!client.connected())
+  {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("ESP8266Client")) {
+    if (client.connect((String(id) + "ESP-32").c_str()))
+    {
       Serial.println("connected");
-      client.subscribe("alarms/test/activation");
-    } else {
+      client.subscribe(("alarms/" + String(id) + "/activation").c_str());
+    }
+    else
+    {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
@@ -112,11 +126,11 @@ void setupMQTT()
   {
     Serial.println("Connecting to MQTT...");
 
-    if (client.connect("ESP32Client"))
+    if (client.connect((String(id) + "ESP-32").c_str()))
     {
 
       Serial.println("connected");
-      client.subscribe("alarms/test/activation");
+      client.subscribe(("alarms/" + String(id) + "/activation").c_str());
     }
     else
     {
@@ -140,40 +154,51 @@ void setup()
 {
   Serial.begin(115200);
   setupWifi();
-  setupMQTT();  
+  setupMQTT();
   setupPins();
 }
 
 void loop()
 {
-  if (!client.connected()) {
+  if (!client.connected())
+  {
     reconnect();
   }
   client.loop();
-  if ((movement || sound) && isActive) {
+  if ((movement || sound) && isActive)
+  {
     Serial.println("Envoi");
     StaticJsonDocument<300> JSONbuffer;
     JsonObject JSONencoder = JSONbuffer.createNestedObject();
-    if (sound) {
+    if (sound)
+    {
       int soundState = digitalRead(PIN_SOUND_SENSOR);
-      if (soundState == 1) {
+      if (soundState == 1)
+      {
         JSONencoder["value"] = "1";
-      } else {
+      }
+      else
+      {
         JSONencoder["value"] = "0";
       }
       JSONencoder["type"] = "Sound";
-    } else {
+    }
+    else
+    {
       JSONencoder["type"] = "Movement";
       int movementState = digitalRead(PIN_MOVEMENT_SENSOR);
-      if (movementState == 1) {
+      if (movementState == 1)
+      {
         JSONencoder["value"] = "1";
-      } else {
+      }
+      else
+      {
         JSONencoder["value"] = "0";
       }
     }
     char JSONmessageBuffer[100];
     serializeJson(JSONencoder, JSONmessageBuffer);
-    client.publish("alarms/test/events", JSONmessageBuffer);
+    client.publish(String("alarms/" + String(id) + "/events").c_str(), JSONmessageBuffer);
     Serial.println(JSONmessageBuffer);
     movement = false;
     sound = false;
