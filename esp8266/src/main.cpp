@@ -11,7 +11,7 @@ const char *wifi_ssid = "SFR_4CA0";
 const char *wifi_password = "49dd0e4b41";
 const String hostname = "192.168.1.83";
 const String apiPort = "3000";
-const char *id = "254a89c7-ac15-43c9-b01b-ad465ab44d21";
+const char *id = "254a89c7-ac15-43c9-b01b-ad465ab44d14";
 
 // KEYPAD
 char key = NO_KEY;
@@ -403,6 +403,9 @@ void goTo()
       while (password != askPassword(ENTER_CODE_MSG))
       {
       }
+      displayReset();
+      LCD.print("GET OUT");
+      delay(getTimerFromEeprom() * 1000);
       sendIsActivePayload("1");
       displayReset();
       LCD.print("Alarm on");

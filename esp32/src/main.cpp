@@ -21,7 +21,7 @@ const char *ssid = "SFR_4CA0";
 const char *password = "49dd0e4b41";
 const char *mqttServer = "mqtt.potb.dev";
 const int mqttPort = 8883;
-char *id = "254a89c7-ac15-43c9-b01b-ad465ab44d21";
+char *id = "254a89c7-ac15-43c9-b01b-ad465ab44d14";
 
 #define DEBOUNCE_TIME 500
 volatile uint32_t DebounceTimer = 0;
