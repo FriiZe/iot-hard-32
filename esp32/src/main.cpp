@@ -175,17 +175,17 @@ void loop()
       int soundState = digitalRead(PIN_SOUND_SENSOR);
       if (soundState == 1)
       {
-        JSONencoder["value"] = "1";
+        JSONencoder["value"] = "0";
       }
       else
       {
-        JSONencoder["value"] = "0";
+        JSONencoder["value"] = "1";
       }
-      JSONencoder["type"] = "Sound";
+      JSONencoder["type"] = "SOUND";
     }
     else
     {
-      JSONencoder["type"] = "Movement";
+      JSONencoder["type"] = "MOVEMENT";
       int movementState = digitalRead(PIN_MOVEMENT_SENSOR);
       if (movementState == 1)
       {
